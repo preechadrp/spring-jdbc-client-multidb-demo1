@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<property name="LOG_DIR" value="./logs" />
+	<property name="LOG_NAME" value="springJdbcClientMultiDb" />
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<!-- <pattern>%d{HH:mm:ss.SSS, Asia/Bangkok} [%thread] %-5level %logger{36} - %msg%n 
+				</pattern> -->
+			<pattern>%d{HH:mm:ss.SSS, Asia/Bangkok} [%thread] %-5level %logger{60} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_DIR}/${LOG_NAME}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_DIR}/${LOG_NAME}.%d{yyyy-MM-dd}.log.gz
+			</fileNamePattern>
+			<!-- เก่าเกิน 30 วันให้ลบ -->
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Bangkok} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- TRACE, DEBUG, INFO, WARN, ERROR -->
+
+	<logger name="org.springframework" level="info" />
+	<logger name="com.zaxxer.hikari.pool.HikariPool" level="warn" />
+	<logger name="org.hibernate.validator" level="info" />
+	<logger name="org.mariadb.jdbc.client.impl.StandardClient" level="info" />
+
+	<!-- Profile: dev -->
+	<springProfile name="dev">
+		<root level="DEBUG">
+			<appender-ref ref="CONSOLE" />
+			<appender-ref ref="ROLLING" />
+		</root>
+		<logger name="org.springframework.jdbc.core" level="debug" />
+	</springProfile>
+
+	<!-- Profile: prod -->
+	<springProfile name="prod">
+		<root level="INFO">
+			<appender-ref ref="ROLLING" />
+		</root>
+	</springProfile>
+
+</configuration>
