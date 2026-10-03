@@ -1,0 +1,30 @@
+# ให้ Spring Boot ไปหา schema.sql / data.sql แล้ว execute
+#spring:
+#  sql:
+#    init:
+#      mode: always
+
+# === custom datasource ===
+datasource1:
+  jdbc-url: jdbc:mariadb://localhost:3306/demo
+  driver-class-name: org.mariadb.jdbc.Driver
+  username: root
+  password: a1234
+  # HikariCP Connection Pool Configuration
+  maximum-pool-size: 3
+  minimum-idle: 2
+  connection-timeout: 30000
+  auto-commit: true
+  pool-name: pool1
+
+datasource2:
+  jdbc-url: jdbc:mariadb://localhost:3306/demo
+  driver-class-name: org.mariadb.jdbc.Driver
+  username: root
+  password: a1234
+  # HikariCP Connection Pool Configuration
+  maximum-pool-size: 4
+  minimum-idle: 1
+  connection-timeout: 20000
+  auto-commit: true
+  pool-name: pool2

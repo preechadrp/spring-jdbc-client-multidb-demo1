@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: spring-jdbc-client-multidb-demo1
+  threads:
+    virtual:
+      enabled: true
+  jackson:
+    time-zone: Asia/Bangkok
+
+# if not store in /src/main/resources
+logging:
+  config: config/logback-spring.xml
+
+# timezone ของ JSON (Instant -> String) ให้แสดงเป็นเวลาไทย
+# (timezone ของ JVM ตั้งด้วย TimeZone.setDefault(...) ใน main แล้ว)
