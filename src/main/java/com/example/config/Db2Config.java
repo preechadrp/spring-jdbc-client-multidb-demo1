@@ -33,6 +33,7 @@ public class Db2Config {
 	@Bean(name = "db2TransactionManager")
 	PlatformTransactionManager transactionManager(@Qualifier("db2DataSource") DataSource dataSource) {
 		// ใช้คู่กับ @Transactional(transactionManager = "db2TransactionManager")
+		// หรือ inject มาคุม transaction ในโค้ดเอง (ดู ProductTxService)
 		return new DataSourceTransactionManager(dataSource);
 	}
 }

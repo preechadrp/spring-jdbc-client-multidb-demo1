@@ -3,17 +3,20 @@ package com.example;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataAccessException;
 
 import com.example.common.ProductJdbcRepository;
 import com.example.db1.repository.ProductDb1Repository;
 import com.example.db2.repository.ProductDb2Repository;
 import com.example.model.Product;
+import com.example.service.ProductTxService;
 
 @SpringBootApplication
 public class SpringJdbcClientMultiDbApplication {
@@ -33,6 +36,40 @@ public class SpringJdbcClientMultiDbApplication {
 	@Bean
 	CommandLineRunner demoDb2(ProductDb2Repository repository) {
 		return (args) -> runDemo("db2", repository);
+	}
+
+	/** ตัวอย่าง transaction ด้วย PlatformTransactionManager / TransactionTemplate (ดู ProductTxService) */
+	@Bean
+	CommandLineRunner demoTransaction(ProductTxService txService, ProductDb1Repository db1Repository) {
+		return (args) -> {
+			System.out.println("\n========== transaction (PlatformTransactionManager) ==========");
+
+			// == 1. commit: insert 2 รายการสำเร็จทั้งคู่ ==
+			List<Product> saved = txService.saveAllDb1Manual(List.of(
+					new Product(null, "Monitor tx", new BigDecimal("5000.00")),
+					new Product(null, "Headset tx", new BigDecimal("2000.00"))));
+			System.out.println("Committed: " + saved);
+
+			// == 2. rollback: รายการที่ 2 name = null ผิด NOT NULL -> รายการแรกต้องหายไปด้วย ==
+			long countBefore = db1Repository.count();
+			try {
+				txService.saveAllDb1(List.of(
+						new Product(null, "Should be rolled back", new BigDecimal("100.00")),
+						new Product(null, null, new BigDecimal("200.00"))));
+			} catch (DataAccessException ex) {
+				System.out.println("Rolled back: " + ex.getClass().getSimpleName());
+			}
+			System.out.println("Count before = " + countBefore + ", after = " + db1Repository.count());
+
+			// == 3. setRollbackOnly(): ลดราคาจาก 5000 เหลือ 1000 (ต่ำกว่าครึ่ง) -> ไม่บันทึก ==
+			Long monitorId = saved.get(0).id();
+			boolean committed = txService.updatePriceDb1(monitorId, new BigDecimal("1000.00"));
+			System.out.println("Update committed? " + committed + " -> " + db1Repository.findById(monitorId).orElse(null));
+
+			// == 4. ข้าม 2 database: ย้าย Headset จาก db1 ไป db2 ==
+			Product moved = txService.moveDb1ToDb2(saved.get(1).id());
+			System.out.println("Moved to db2: " + moved);
+		};
 	}
 
 	/** ขั้นตอนทดสอบเหมือนกันทั้ง db1 และ db2 ต่างกันแค่ repository ที่ส่งเข้ามา */

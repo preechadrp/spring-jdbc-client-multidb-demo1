@@ -42,6 +42,7 @@ public class Db1Config {
 	@Bean(name = "db1TransactionManager")
 	PlatformTransactionManager transactionManager(@Qualifier("db1DataSource") DataSource dataSource) {
 		// ใช้คู่กับ @Transactional(transactionManager = "db1TransactionManager")
+		// หรือ inject มาคุม transaction ในโค้ดเอง (ดู ProductTxService)
 		return new DataSourceTransactionManager(dataSource);
 	}
 }
